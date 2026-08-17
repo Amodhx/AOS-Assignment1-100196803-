@@ -1,0 +1,8 @@
+logs/*.txt
+*.tar.gz
+ArchiveLogs/
+job_queue.txt
+completed_jobs.txt
+submission_log.txt
+scheduler_log.txt
+system_monitor_log.txt
