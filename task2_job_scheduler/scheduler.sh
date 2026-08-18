@@ -48,11 +48,6 @@ view_pending() {
 }
 
 round_robin() {
-    if [ ! -f "$QUEUE_FILE" ] || [ ! -s "$QUEUE_FILE" ]; then
-        echo "No pending jobs to schedule."
-        return
-    fi
-
     echo "--- Running Round Robin (quantum = ${TIME_QUANTUM}s) ---"
 
     mapfile -t jobs < "$QUEUE_FILE"
@@ -80,6 +75,37 @@ round_robin() {
     echo "Round Robin scheduling complete."
 }
 
+priority_schedule() {
+    echo "--- Running Priority Scheduling (1=highest) ---"
+
+    sort -t'|' -k4,4n "$QUEUE_FILE" -o "$QUEUE_FILE"
+    mapfile -t jobs < "$QUEUE_FILE"
+    > "$QUEUE_FILE"
+
+    for entry in "${jobs[@]}"; do
+        IFS='|' read -r sid jname exectime priority <<< "$entry"
+        echo "Running $jname ($sid) - priority $priority - for ${exectime}s -> COMPLETED"
+        sleep "$exectime"
+        echo "${sid}|${jname}|Priority|$(date '+%Y-%m-%d %H:%M:%S')" >> "$COMPLETED_FILE"
+    done
+
+    echo "Priority scheduling complete."
+}
+
+process_queue() {
+    if [ ! -f "$QUEUE_FILE" ] || [ ! -s "$QUEUE_FILE" ]; then
+        echo "No pending jobs to schedule."
+        return
+    fi
+
+    read -p "Choose scheduling type - (R)ound Robin or (P)riority: " sched_choice
+    case $sched_choice in
+        R|r) round_robin ;;
+        P|p) priority_schedule ;;
+        *) echo "Invalid choice." ;;
+    esac
+}
+
 while true; do
     show_menu
     read -p "Choose an option: " choice
@@ -87,7 +113,7 @@ while true; do
     case $choice in
         1) view_pending ;;
         2) submit_job ;;
-        3) round_robin ;;
+        3) process_queue ;;
         4) echo "[stub] view completed jobs" ;;
         5) echo "Goodbye!"; exit 0 ;;
         *) echo "Invalid option, please try again." ;;
