@@ -128,7 +128,14 @@ process_queue() {
         *) echo "Invalid choice." ;;
     esac
 }
-
+exit_program() {
+    read -p "Are you sure you want to exit? (Y/N): " confirm
+    if [[ "$confirm" == "Y" || "$confirm" == "y" ]]; then
+        log_action "User exited the scheduler system."
+        echo "Goodbye!"
+        exit 0
+    fi
+}
 while true; do
     show_menu
     read -p "Choose an option: " choice
@@ -138,7 +145,7 @@ while true; do
         2) submit_job ;;
         3) process_queue ;;
         4) view_completed ;;
-        5) echo "Goodbye!"; exit 0 ;;
+        5) exit_program ;;
         *) echo "Invalid option, please try again." ;;
     esac
 done
