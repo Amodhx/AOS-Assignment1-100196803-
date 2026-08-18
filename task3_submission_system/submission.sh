@@ -8,7 +8,7 @@ show_menu() {
     echo ""
     echo "===== Secure Student Submission System ====="
     echo "1) Submit an assignment"
-    echo "2) View all submissions"
+    echo "2) View submissions"
     echo "3) Login simulation"
     echo "4) Bye (exit)"
     echo "=============================================="
@@ -51,13 +51,21 @@ submit_assignment() {
     echo "Submission accepted: $filename saved as $dest"
 }
 
+view_submissions() {
+    if [ ! -d "$SUBMISSIONS_DIR" ] || [ -z "$(ls -A "$SUBMISSIONS_DIR" 2>/dev/null)" ]; then
+        echo "No submissions yet."
+        return
+    fi
+    echo "--- All Submissions ---"
+    ls -lh "$SUBMISSIONS_DIR"
+}
 while true; do
     show_menu
     read -p "Choose an option: " choice
 
     case $choice in
         1) submit_assignment ;;
-        2) echo "[stub] view submissions" ;;
+        2) "view_submissions" ;;
         3) echo "[stub] login simulation" ;;
         4) echo "Goodbye!"; exit 0 ;;
         *) echo "Invalid option, please try again." ;;
