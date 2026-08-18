@@ -2,6 +2,7 @@
 
 SUBMISSIONS_DIR="submissions"
 LOG_FILE="submission_log.txt"
+MAX_SIZE_MB=5
 
 show_menu() {
     echo ""
@@ -13,12 +14,42 @@ show_menu() {
     echo "=============================================="
 }
 
+submit_assignment() {
+    read -p "Enter student ID: " sid
+    read -p "Enter full path to file to submit: " filepath
+
+    if [ ! -f "$filepath" ]; then
+        echo "File not found."
+        return
+    fi
+
+    ext="${filepath##*.}"
+    if [[ "$ext" != "pdf" && "$ext" != "docx" ]]; then
+        echo "Rejected: only .pdf and .docx files are accepted."
+        return
+    fi
+
+    size_bytes=$(stat -c%s "$filepath")
+    max_bytes=$((MAX_SIZE_MB * 1024 * 1024))
+    if [ "$size_bytes" -gt "$max_bytes" ]; then
+        echo "Rejected: file exceeds ${MAX_SIZE_MB}MB limit."
+        return
+    fi
+
+    mkdir -p "$SUBMISSIONS_DIR"
+    filename=$(basename "$filepath")
+    dest="${SUBMISSIONS_DIR}/${sid}_${filename}"
+    cp "$filepath" "$dest"
+
+    echo "Submission accepted: $filename saved as $dest"
+}
+
 while true; do
     show_menu
     read -p "Choose an option: " choice
 
     case $choice in
-        1) echo "[stub] submit assignment" ;;
+        1) submit_assignment ;;
         2) echo "[stub] view submissions" ;;
         3) echo "[stub] login simulation" ;;
         4) echo "Goodbye!"; exit 0 ;;
