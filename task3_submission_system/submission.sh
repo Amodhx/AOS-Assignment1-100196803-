@@ -52,6 +52,9 @@ submit_assignment() {
 }
 
 view_submissions() {
+
+
+
     if [ ! -d "$SUBMISSIONS_DIR" ] || [ -z "$(ls -A "$SUBMISSIONS_DIR" 2>/dev/null)" ]; then
         echo "No submissions yet."
         return
@@ -59,6 +62,25 @@ view_submissions() {
     echo "--- All Submissions ---"
     ls -lh "$SUBMISSIONS_DIR"
 }
+login_simulation() {
+    read -p "Enter student ID: " sid
+    read -p "Enter password (any value - this is a simulation): " pw
+    read -p "Simulate this attempt as correct? (Y/N): " is_correct
+
+    if [[ "$is_correct" == "Y" || "$is_correct" == "y" ]]; then
+        result=$(python3 auth_utils.py attempt "$sid" true)
+    else
+        result=$(python3 auth_utils.py attempt "$sid" false)
+    fi
+
+    case $result in
+        OK) echo "Login successful for $sid." ;;
+        LOCKED) echo "Account $sid is LOCKED due to too many failed attempts." ;;
+        SUSPICIOUS) echo "Login recorded, but SUSPICIOUS activity detected for $sid (rapid repeated attempts)." ;;
+    esac
+}
+
+
 while true; do
     show_menu
     read -p "Choose an option: " choice
@@ -66,7 +88,7 @@ while true; do
     case $choice in
         1) submit_assignment ;;
         2) "view_submissions" ;;
-        3) echo "[stub] login simulation" ;;
+        3) "login_simulation" ;;
         4) echo "Goodbye!"; exit 0 ;;
         *) echo "Invalid option, please try again." ;;
     esac
