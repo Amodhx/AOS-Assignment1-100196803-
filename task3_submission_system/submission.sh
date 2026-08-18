@@ -36,11 +36,18 @@ submit_assignment() {
         return
     fi
 
+    dup_check=$(python3 hash_utils.py check "$filepath")
+    if [ "$dup_check" == "DUPLICATE" ]; then
+        echo "Rejected: this file content has already been submitted."
+        return
+    fi
+
     mkdir -p "$SUBMISSIONS_DIR"
     filename=$(basename "$filepath")
     dest="${SUBMISSIONS_DIR}/${sid}_${filename}"
     cp "$filepath" "$dest"
 
+    python3 hash_utils.py add "$filepath" "$sid" "$(basename "$dest")"
     echo "Submission accepted: $filename saved as $dest"
 }
 
